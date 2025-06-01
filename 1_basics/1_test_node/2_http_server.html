@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Status Fetcher</title>
+</head>
+<body>
+  <button onclick="getData()">Fetch Status</button>
+  <div class="main"></div>
+
+  <script>
+    let myData;
+
+    function getData() {
+      fetch('http://127.0.0.1:8000/status')
+        .then((res) => res.json())
+        .then((data) => {
+          myData = data;
+          console.log("✅ Fetched data:", data);
+
+          // Clear previous content and append new
+          const main = document.querySelector('.main');
+          main.innerHTML = ""; // Clear old
+          
+          const h2 = document.createElement('h2');
+          h2.innerText = `Status: ${data.status} | Time: ${new Date(data.timestamp).toLocaleString()}`;
+          main.appendChild(h2);
+        })
+        .catch((error) => {
+          console.error("❌ Error:", error);
+        })
+        .finally(() => {
+          console.log("✅ 1 communication request has been fulfilled");
+        });
+    }
+  </script>
+</body>
+</html>

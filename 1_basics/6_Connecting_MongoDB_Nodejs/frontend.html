@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e0e0;
+        }
+
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+        }
+
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .student-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .student-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .student-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .student-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .student-info p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .student-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+        }
+
+        .notification.error {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .students-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Student Management System</h1>
+            <p>Manage your students with ease and efficiency</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalStudents">0</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>➕ Add New Student</h2>
+            <form id="addStudentForm">
+                <div class="form-group">
+                    <label for="studentName">Student Name</label>
+                    <input type="text" id="studentName" name="name" required placeholder="Enter student name">
+                </div>
+                <div class="form-group">
+                    <label for="studentEmail">Email Address</label>
+                    <input type="email" id="studentEmail" name="email" required placeholder="Enter email address">
+                </div>
+                <button type="submit" class="btn btn-success">Add Student</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>👥 Student List</h2>
+            <button onclick="loadStudents()" class="btn">🔄 Refresh List</button>
+            
+            <div class="loading" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>Loading students...</p>
+            </div>
+            
+            <div class="students-grid" id="studentsContainer">
+                <!-- Students will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Student Modal -->
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUpdateModal()">&times;</span>
+            <h2>✏️ Update Student</h2>
+            <form id="updateStudentForm">
+                <input type="hidden" id="updateStudentId">
+                <div class="form-group">
+                    <label for="updateStudentName">Student Name</label>
+                    <input type="text" id="updateStudentName" name="name" placeholder="Enter student name">
+                </div>
+                <div class="form-group">
+                    <label for="updateStudentEmail">Email Address</label>
+                    <input type="email" id="updateStudentEmail" name="email" placeholder="Enter email address">
+                </div>
+                <button type="submit" class="btn btn-warning">Update Student</button>
+                <button type="button" class="btn" onclick="closeUpdateModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Show/hide loading spinner
+        function toggleLoading(show) {
+            const spinner = document.getElementById('loadingSpinner');
+            spinner.style.display = show ? 'block' : 'none';
+        }
+
+        // Load all students
+        async function loadStudents() {
+            try {
+                toggleLoading(true);
+                const response = await fetch(`${API_BASE}/student-read`);
+                const data = await response.json();
+                
+                const container = document.getElementById('studentsContainer');
+                container.innerHTML = '';
+                
+                if (data.findRes && data.findRes.length > 0) {
+                    data.findRes.forEach(student => {
+                        const studentCard = createStudentCard(student);
+                        container.appendChild(studentCard);
+                    });
+                    updateStats(data.findRes.length);
+                } else {
+                    container.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1;">No students found. Add some students to get started!</p>';
+                    updateStats(0);
+                }
+            } catch (error) {
+                console.error('Error loading students:', error);
+                showNotification('Failed to load students', 'error');
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        // Create student card element
+        function createStudentCard(student) {
+            const card = document.createElement('div');
+            card.className = 'student-card';
+            card.innerHTML = `
+                <div class="student-info">
+                    <h3>${student.name}</h3>
+                    <p>📧 ${student.email}</p>
+                    <p style="font-size: 0.8em; color: #999;">ID: ${student._id}</p>
+                </div>
+                <div class="student-actions">
+                    <button class="btn btn-warning" onclick="openUpdateModal('${student._id}', '${student.name}', '${student.email}')">
+                        ✏️ Edit
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteStudent('${student._id}')">
+                        🗑️ Delete
+                    </button>
+                </div>
+            `;
+            return card;
+        }
+
+        // Update statistics
+        function updateStats(count) {
+            document.getElementById('totalStudents').textContent = count;
+        }
+
+        // Add new student
+        document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const studentData = {
+                name: formData.get('name'),
+                email: formData.get('email')
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/student-insert`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(studentData)
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 1) {
+                    showNotification('Student added successfully!', 'success');
+                    e.target.reset();
+                    loadStudents();
+                } else {
+                    showNotification('Failed to add student', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding student:', error);
+                showNotification('Error adding student', 'error');
+            }
+        });
+
+        // Delete student
+        async function deleteStudent(id) {
+            if (!confirm('Are you sure you want to delete this student?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/student-delete/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                
+                if (result.deletedCount && result.deletedCount > 0) {
+                    showNotification('Student deleted successfully!', 'success');
+                    loadStudents();
+                } else {
+                    showNotification('Failed to delete student', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting student:', error);
+                showNotification('Error deleting student', 'error');
+            }
+        }
+
+        // Open update modal
+        function openUpdateModal(id, name, email) {
+            document.getElementById('updateStudentId').value = id;
+            document.getElementById('updateStudentName').value = name;
+            document.getElementById('updateStudentEmail').value = email;
+            document.getElementById('updateModal').style.display = 'block';
+        }
+
+        // Close update modal
+        function closeUpdateModal() {
+            document.getElementById('updateModal').style.display = 'none';
+        }
+
+        // Update student
+        document.getElementById('updateStudentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('updateStudentId').value;
+            const name = document.getElementById('updateStudentName').value;
+            const email = document.getElementById('updateStudentEmail').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/student-update/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 1) {
+                    showNotification('Student updated successfully!', 'success');
+                    closeUpdateModal();
+                    loadStudents();
+                } else {
+                    showNotification('Failed to update student', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating student:', error);
+                showNotification('Error updating student', 'error');
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('updateModal');
+            if (event.target === modal) {
+                closeUpdateModal();
+            }
+        }
+
+        // Load students on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStudents();
+        });
+
+        // Add some nice animations
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>
